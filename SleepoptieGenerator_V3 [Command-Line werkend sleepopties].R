@@ -85,14 +85,14 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
     # Update maximum number of lines based on actual needed lines
     if (lines_needed > max_number_of_lines) {
       max_number_of_lines <- lines_needed  # 
-      cat("MAX NUMBER OF LINES UPDATED TO: ", max_number_of_lines, "=====\n")
+      #cat("MAX NUMBER OF LINES UPDATED TO: ", max_number_of_lines, "=====\n")
     }
   }
   
   # Berekening van hoogte voor plaatjes
   calculated_height <- (max_number_of_lines * 15) + 5
   
-    for (var_name in names(non_empty_sleepopties)) {
+  for (var_name in names(non_empty_sleepopties)) {
     text_to_wrap <- non_empty_sleepopties[[var_name]]
     result <- wrap_text(text_to_wrap, max_chars_per_line)
     wrapped_text <- str_trim(result$wrapped_text)
@@ -108,7 +108,7 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
                                       color = "black",
                                       font = "Verdana")
     
-    output_filename <- file.path(tekst_titel, paste0(tekst_titel, "_TEST", var_name, ".jpg"))
+    output_filename <- file.path(tekst_titel, paste0(tekst_titel, var_name, ".jpg"))
     image_write(sleepoptie_doos, output_filename)
   }
   cat("Sleepopties gegenereerd voor: ", tekst_titel,"\n")
