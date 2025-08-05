@@ -6,7 +6,6 @@ library(readxl)
 library(writexl)
 
 ### Functions ##################################################################
-
 # Function to wrap text to a specified width (remains unchanged)
 wrap_text <- function(text, width) {
   lines_for_curr_text <- 0
@@ -26,8 +25,7 @@ wrap_text <- function(text, width) {
     wrapped_lines <- c(wrapped_lines, current_line)
     lines_for_curr_text <- lines_for_curr_text + 1  # Count the last line
   }
-  return(list(wrapped_text = paste(wrapped_lines, collapse = "\n"),
-              line_count = lines_for_curr_text))
+  return(list(wrapped_text = paste(wrapped_lines, collapse = "\n"), line_count = lines_for_curr_text))
 }
 
 # Function to load data from an Excel file (remains unchanged)
@@ -68,22 +66,33 @@ create_output_dir <- function(directory_name) {
   }
 }
 
-# Function to create images for sleep options (remains unchanged)
+# Function to create images for sleep options
 create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, max_chars_per_line) {
   max_number_of_lines <- 0
+  # Iterate over each sleep option
   for (var_name in names(non_empty_sleepopties)) {
     text_to_wrap <- non_empty_sleepopties[[var_name]]
     result <- wrap_text(text_to_wrap, max_chars_per_line)
     wrapped_text <- str_trim(result$wrapped_text)
     lines_needed <- result$line_count
     
-    # Update maximum number of lines
+    # Update maximum number of lines based on actual needed lines
     if (lines_needed > max_number_of_lines) {
-      max_number_of_lines <- lines_needed + 1
+      max_number_of_lines <- lines_needed  # Remove +1 to count only used lines
+      cat("MAX NUMBER OF LINES UPDATED TO: ", max_number_of_lines, "=====\n")
     }
-    calculated_height <- (max_number_of_lines * 15) + 5
+  }
+  
+  # Calculate the image height
+  calculated_height <- (max_number_of_lines * 15) + 5
+  
+  # Create images with the calculated height
+  for (var_name in names(non_empty_sleepopties)) {
+    text_to_wrap <- non_empty_sleepopties[[var_name]]
+    result <- wrap_text(text_to_wrap, max_chars_per_line)
+    wrapped_text <- str_trim(result$wrapped_text)
     
-    # Plaatje maken met berekende hoogte.
+    # Create image with the calculated height
     sleepoptie_doos_img <- image_read("500x500_template.png") %>%
       image_resize(paste0("210x", calculated_height, "!")) %>%
       image_background("white")
@@ -102,11 +111,9 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
 ### Main Script ################################################################
 file_path <- "Sleepvraag_Items.xlsx"
 data <- load_data(file_path)
-
 # Ask the user for the name to include in the "gegenereerd" column
 user_name <- readline(prompt = "Geef a.u.b. jouw naam, voor het bijhouden wie wat gegenereerd heeft: ")
 today_date <- format(Sys.Date(), "%Y-%m-%d")
-
 # Process each row where the 'gegenereerd' column is empty
 for (i in seq_len(nrow(data))) {
   if (is.na(data$gegenereerd[i]) || nchar(data$gegenereerd[i]) == 0) {
@@ -114,12 +121,10 @@ for (i in seq_len(nrow(data))) {
     vak <- selected_row$vak
     tekst_titel <- selected_row$tekst_titel
     tekst_itemnummer <- as.integer(selected_row$vraag)
-    max_chars_per_line <- 33
+    max_chars_per_line <- 34
     non_empty_sleepopties <- prepare_sleep_options(selected_row)
-    
     # New output directory name
     output_directory_name <- paste0(vak, "_", tekst_titel, "_item_", tekst_itemnummer)
-    
     create_output_dir(output_directory_name)  # Updated directory name
     create_images(non_empty_sleepopties, output_directory_name, tekst_itemnummer, max_chars_per_line)
     
@@ -127,7 +132,6 @@ for (i in seq_len(nrow(data))) {
     data$gegenereerd[i] <- paste(today_date, "door", user_name)
   }
 }
-
 # Save the updated data back to Excel
 write_xlsx(data, file_path)
 cat("Alle sleepopties zijn gegenereerd, dankjewel", user_name, "! :)")
