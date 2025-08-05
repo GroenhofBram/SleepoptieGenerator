@@ -5,6 +5,12 @@ library(tidyverse)
 library(readxl)
 library(writexl)
 
+#### Mogelijke bugs/glitches [VOOR BRAM OM NIET TE VERGETEN] ####
+# 1: Plaatje is niet hoog genoeg: max_number_of_lines moet anders berekend worden
+# 2: Sleepopties worden te hoog, terwijl er veel ruimte overblijft op regels: max_chars_per_line uitproberen
+####
+
+
 ### Functions ##################################################################
 # Function to wrap text to a specified width (remains unchanged)
 wrap_text <- function(text, width) {
@@ -49,7 +55,7 @@ prepare_sleep_options <- function(selected_row) {
   return(sleepopties[sapply(sleepopties, function(x) !is.na(x) && nchar(x) > 0)])
 }
 
-# Function to create output directory with a pre-existing check
+# Mapje maken/checken of mapje bestaat
 create_output_dir <- function(directory_name) {
   if (dir.exists(directory_name)) {
     cat("\n####################################################\n",
@@ -78,21 +84,20 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
     
     # Update maximum number of lines based on actual needed lines
     if (lines_needed > max_number_of_lines) {
-      max_number_of_lines <- lines_needed  # Remove +1 to count only used lines
+      max_number_of_lines <- lines_needed  # 
       cat("MAX NUMBER OF LINES UPDATED TO: ", max_number_of_lines, "=====\n")
     }
   }
   
-  # Calculate the image height
+  # Berekening van hoogte voor plaatjes
   calculated_height <- (max_number_of_lines * 15) + 5
   
-  # Create images with the calculated height
-  for (var_name in names(non_empty_sleepopties)) {
+    for (var_name in names(non_empty_sleepopties)) {
     text_to_wrap <- non_empty_sleepopties[[var_name]]
     result <- wrap_text(text_to_wrap, max_chars_per_line)
     wrapped_text <- str_trim(result$wrapped_text)
     
-    # Create image with the calculated height
+    # Plaatje maken met de berekende hoogte
     sleepoptie_doos_img <- image_read("500x500_template.png") %>%
       image_resize(paste0("210x", calculated_height, "!")) %>%
       image_background("white")
@@ -102,7 +107,8 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
                                       gravity = "northwest",
                                       color = "black",
                                       font = "Verdana")
-    output_filename <- file.path(tekst_titel, paste0(tekst_titel, "_", var_name, ".jpg"))
+    
+    output_filename <- file.path(tekst_titel, paste0(tekst_titel, "_TEST", var_name, ".jpg"))
     image_write(sleepoptie_doos, output_filename)
   }
   cat("Sleepopties gegenereerd voor: ", tekst_titel,"\n")
@@ -111,27 +117,28 @@ create_images <- function(non_empty_sleepopties, tekst_titel, tekst_itemnummer, 
 ### Main Script ################################################################
 file_path <- "Sleepvraag_Items.xlsx"
 data <- load_data(file_path)
-# Ask the user for the name to include in the "gegenereerd" column
-user_name <- readline(prompt = "Geef a.u.b. jouw naam, voor het bijhouden wie wat gegenereerd heeft: ")
+user_name <- readline(prompt = "Geef a.u.b. jouw naam: ")
 today_date <- format(Sys.Date(), "%Y-%m-%d")
-# Process each row where the 'gegenereerd' column is empty
+
+# Alle regels waar 'gegenereerd' leeg is uitvoeren
 for (i in seq_len(nrow(data))) {
   if (is.na(data$gegenereerd[i]) || nchar(data$gegenereerd[i]) == 0) {
     selected_row <- data[i, ]
     vak <- selected_row$vak
     tekst_titel <- selected_row$tekst_titel
     tekst_itemnummer <- as.integer(selected_row$vraag)
-    max_chars_per_line <- 34
+    max_chars_per_line <- 33 ## 33, uitzondering nagelaten
     non_empty_sleepopties <- prepare_sleep_options(selected_row)
-    # New output directory name
+    
+    # Folder aanmaken
     output_directory_name <- paste0(vak, "_", tekst_titel, "_item_", tekst_itemnummer)
     create_output_dir(output_directory_name)  # Updated directory name
     create_images(non_empty_sleepopties, output_directory_name, tekst_itemnummer, max_chars_per_line)
     
-    # Update 'gegenereerd' column for the current row
+    # gegenereerd kolom updaten, om overschrijfproblemen te voorkomen
     data$gegenereerd[i] <- paste(today_date, "door", user_name)
   }
 }
-# Save the updated data back to Excel
+# gegeneerd kolom ook updaten naar Excel
 write_xlsx(data, file_path)
 cat("Alle sleepopties zijn gegenereerd, dankjewel", user_name, "! :)")
