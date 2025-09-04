@@ -57,9 +57,9 @@ prepare_sleep_options <- function(selected_row) {
   return(sleepopties[sapply(sleepopties, function(x) !is.na(x) && nchar(x) > 0)])
 }
 
-# Function to sanitize strings for file/directory names
+# Function to sanitize strings for file/directory names*(special chars produced errors)
 sanitize_string <- function(string) {
-  string <- gsub("[<>:\"\\/|?*]", "_", string)  # Replace invalid characters with underscores
+  string <- gsub("[<>:\"\\/|?*]", "_", string)  # Replace invalid characters with underscores :)
   return(string)
 }
 
@@ -81,7 +81,7 @@ create_output_dir <- function(full_output_directory) {
   }
 }
 
-# Function to create images for sleep options
+# Function to create images for sleepopties, type based on data in Excel
 create_images <- function(non_empty_sleepopties, full_output_directory, tekst_itemnummer, max_chars_per_line, image_width) {
   max_number_of_lines <- 0  
   # Iterate over each sleep option
@@ -169,7 +169,7 @@ for (i in seq_len(nrow(data))) {
   full_output_directory <- file.path(main_output_directory, output_directory_name)
   
   create_output_dir(full_output_directory)  # Check and create output directory
-  create_images(non_empty_sleepopties, full_output_directory, tekst_itemnummer, max_chars_per_line, image_width)  # Updated function call
+  create_images(non_empty_sleepopties, full_output_directory, tekst_itemnummer, max_chars_per_line, image_width)  
   
   # Update 'gegenereerd' column to prevent overwriting issues
   data$gegenereerd[i] <- paste(today_date, "door", user_name)
