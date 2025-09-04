@@ -1,7 +1,7 @@
 # SleepoptieGenerator
 Code that converts text into draggable images for Dutch MBO 2F/3F exams. It will always produce images of the same size.
 
-- 2025-09-04: (...).R, is geüploadet. Deze versie werkt ook met Graphic Gapmatch vragen.
+- 2025-09-04: (...).R, is geüploadet. **Deze versie werkt ook met Graphic Gapmatch vragen.**
 
 - 2025-08-07: Zelfde als vorige update, maar er is nu een handleiding beschikbaar. Ook mist in deze repo nog een tabel_templates.xlsx bestand. Deze bevatten beide prive informatie dus zijn niet hier geüploadet.
 
